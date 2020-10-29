@@ -5,6 +5,7 @@
     ansible_user: vagrant
     ansible_ssh_pass: vagrant
     ansible_connection: paramiko
+    k82_version: 1.15.2-00
 
   tasks:
 
