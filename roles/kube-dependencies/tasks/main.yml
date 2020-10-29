@@ -1,13 +1,11 @@
-- name: install Docker
+- name: install Kubernetes prerequisites
   apt:
-    name: docker.io
+    name:
+      - apt-transport-https
+      - docker.io
+      - nfs-common
     state: present
     update_cache: true
-
-- name: install APT Transport HTTPS
-  apt:
-    name: apt-transport-https
-    state: present
 
 - name: add Kubernetes apt-key
   apt_key:
@@ -22,21 +20,21 @@
 
 - name: install kubelet
   apt:
-    name: "kubelet={{ k8s_version }}"
+    name:
+      - "kubelet={{ k8s_version }}"
+      - "kubeadm={{ k8s_version }}"
     state: present
     update_cache: true
 
-- name: install kubeadm
-  apt:
-    name: "kubeadm={{ k8s_version }}"
-    state: present
+- name: install Docker configuration
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0644
 
 - name: enable service docker
   service:
     name: docker
     enabled: yes
-
-- name: install nfs-common
-  apt:
-    name: nfs-common
-    state: present
