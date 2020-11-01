@@ -1,0 +1,35 @@
+---
+- hosts: all
+  become: yes
+  roles:
+    - common
+    - hosts
+    - kube-dependencies
+
+- hosts: kube-master
+  become: yes
+  roles:
+    - kube-master-dependencies
+    - kube-master-init
+
+- hosts: kube-master
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: get join command
+      command: kubeadm token create --print-join-command
+      register: join_command_raw
+      changed_when: no
+
+    - name: save join command in hostvars
+      add_host:
+        name: "join_command"
+        value: "{{ join_command_raw.stdout_lines[0] }}"
+
+- hosts: kube-nodes
+  become: yes
+  vars:
+    join_command: "{{ hostvars['join_command']['value'] }}"
+  roles:
+    - kube-worker-init
+...
