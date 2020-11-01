@@ -105,3 +105,10 @@ Run
 ```bash
 vagrant destroy
 ```
+
+## Built With
+* [Ansible](https://www.ansible.com/) - Simple, agentless IT automation that anyone can use
+* [Vagrant](https://www.vagrantup.com/) - Development Environments Made Easy.
+
+## Acknowledgments
+* This project is a fork of [talbotfoundry/k8s-kvm](https://github.com/talbotfoundry/k8s-kvm)
