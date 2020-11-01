@@ -1,16 +1,5 @@
 ---
 - import_tasks: flannel-calico.yml
 - import_tasks: metallb.yml
-
-
-
-- name: Apply the Kubernetes Web UI dashboard
-  community.kubernetes.k8s:
-    definition: '{{ item }}'
-  with_items: '{{ lookup("url", "https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml", split_lines=False) | from_yaml_all | list }}'
-  when: item is not none
-
-
-
+- import_tasks: kubernetes-ui-dashboard.yml
 ...
-
