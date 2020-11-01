@@ -1,7 +1,18 @@
 ---
+- hosts: kube-master
+  become: yes
+  gather_facts: yes
+  tasks:
+    - name: save IP network
+      add_host:
+        name: "master_network"
+        value: "{{ hostvars['master']['ansible_default_ipv4']['network'] }}"
+
 - hosts: localhost
   gather_facts: false
   connection: local
+  vars:
+    master_network: "{{ hostvars['master_network']['value'] }}"
   roles:
     - kube-apply-additional-manifests
 ...
