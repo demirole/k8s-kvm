@@ -1,0 +1,7 @@
+---
+- name: Apply the Flannel/Calico networking plugins
+  community.kubernetes.k8s:
+    definition: '{{ item }}'
+  with_items: '{{ lookup("url", "https://docs.projectcalico.org/manifests/canal.yaml", split_lines=False) | from_yaml_all | list }}'
+  when: item is not none
+...
