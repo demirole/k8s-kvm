@@ -1,0 +1,41 @@
+---
+- name: Configure kub-proxy's IPVS mode to strict
+  shell: |
+    kubectl get configmap kube-proxy -n kube-system -o yaml | \
+    sed -e "s/strictARP: false/strictARP: true/" | \
+    kubectl apply -f - -n kube-system
+
+- name: Create memberlist secret
+  command:
+    cmd: kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+  ignore_errors: yes
+
+- name: Apply the namespace manifest of the MetalLB load balancer
+  community.kubernetes.k8s:
+    definition: '{{ item }}'
+  with_items: '{{ lookup("url", "https://raw.githubusercontent.com/metallb/metallb/{{ metallb_version }}/manifests/namespace.yaml", split_lines=False) | from_yaml_all | list }}'
+  when: item is not none
+
+- name: Apply the MetalLB load balancer manifest
+  community.kubernetes.k8s:
+    definition: '{{ item }}'
+  with_items: '{{ lookup("url", "https://raw.githubusercontent.com/metallb/metallb/{{ metallb_version }}/manifests/metallb.yaml", split_lines=False) | from_yaml_all | list }}'
+  when: item is not none
+
+- name: Apply the MetalLB config map for layer 2 mode
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        namespace: metallb-system
+        name: config
+      data:
+        config: |
+          address-pools:
+            - name: default
+              protocol: layer2
+              addresses:
+                - {{ master_network | ansible.netcommon.ipmath(2) }}-{{ master_network | ansible.netcommon.ipmath(100) }}
+...
