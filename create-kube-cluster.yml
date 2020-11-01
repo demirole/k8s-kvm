@@ -26,7 +26,6 @@
         name: "join_command"
         value: "{{ join_command_raw.stdout_lines[0] }}"
 
-
 - hosts: kube-nodes
   become: yes
   vars:

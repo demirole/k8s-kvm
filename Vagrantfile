@@ -51,7 +51,7 @@ Vagrant.configure("2") do |config|
     end
 
     config.vm.provision "ansible" do |ansible|
-        ansible.playbook = "create_auto_inventory.yml"
+        ansible.playbook = "create-auto-inventory.yml"
         ansible.groups = {
             "kube-master" => master[:name],
             "kube-nodes" => node_names
