@@ -37,5 +37,5 @@
             - name: default
               protocol: layer2
               addresses:
-                - {{ master_network | ansible.netcommon.ipmath(2) }}-{{ master_network | ansible.netcommon.ipmath(100) }}
+                - {{ master_network | ansible.netcommon.ipmath(2) }}-{{ master_network | ansible.netcommon.ipmath(20) }}
 ...
