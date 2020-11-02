@@ -1,5 +1,6 @@
 ---
 - import_tasks: flannel-calico.yml
 - import_tasks: metallb.yml
+- import_tasks: nginx-ingress.yml
 - import_tasks: kubernetes-ui-dashboard.yml
 ...
