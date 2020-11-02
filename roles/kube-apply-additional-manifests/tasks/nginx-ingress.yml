@@ -1,0 +1,13 @@
+---
+- name: Apply the baremetal Nginx ingress manifest
+  community.kubernetes.k8s:
+    definition: '{{ item }}'
+  with_items: '{{ lookup("url", "https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/deploy.yaml", split_lines=False) | from_yaml_all | list }}'
+  when: item is not none
+
+- name: Change the Nginx ingress service type to LoadBalancer
+  shell: |
+    kubectl get service ingress-nginx-controller -n ingress-nginx -o yaml | \
+    sed -e "s/type: NodePort/type: LoadBalancer/" | \
+    kubectl apply -f - -n ingress-nginx
+...

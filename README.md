@@ -63,22 +63,52 @@ ansible-playbook -i .vagrant/provisioners/ansible/inventory/vagrant_ansible_inve
   ```
 The cluster nodes are marked 'NotReady' because it does not have a network plugin installed yet.
 
-### Installing a networking plugin 
-The cluster requires a [CNI plugin](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/). Here, we 
-will install the [Canal provider from the Calico project](https://docs.projectcalico.org/getting-started/kubernetes/flannel/flannel#installing-with-the-kubernetes-api-datastore-recommended):
+### Configuring the cluster
+Run
 ```bash
-kubectl apply -f https://docs.projectcalico.org/manifests/canal.yaml
+ansible-playbook -i .vagrant/provisioners/ansible/inventory/vagrant_ansible_inventory configure-kube-cluster.yml
 ```
 
 ### Smoke testing cluster
-Run your first service: 
+The git repository monachus/channel.git by [Adrian Goins](https://adrian.goins.tv/) contains kustomization files 
+for deploying a demo application that tests cluster ingress and load balancing. Those files have been made available in this repo.
+
+First, apply the demo project: 
 ```bash
-kubectl get nodes
-kubectl create deployment nginx --image=nginx
-kubectl create service nodeport nginx --tcp=80:80
-kubectl describe service nginx
+kubectl apply -k ./cluster-demo
 ```
-You can now reach the nginx services under `http://<IP of master node>:<NodePort>`
+ 
+Then, get the public IP of your cluster and the host name of the demo project:
+```bash
+kubectl get service ingress-nginx-controller -n ingress-nginx
+```
+, field `EXTERNAL-IP`, and
+```bash
+kubectl get ingresses.v1.networking.k8s.io rancher-demo
+```
+, field 'HOSTS'
+
+Define a DNS lookup in your `/etc/hosts` where the hostname above is resolved to the IP address. Open that 
+hostname in your local browser. You should see a webpage that pings one of the three replicas of the demo
+project service.
+ 
+Remove the test with
+```bash
+kubectl delete -k ./cluster-demo
+```
+
+### Accessing the Dashboard UI
+Create an admin user that can access the Dashboard via a bearer token
+```bash
+kubectl apply -f kubernetes-manifest/dashboard-adminuser.yaml
+kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
+```
+
+Copy the token. Them, create a proxy
+```bash
+kubectl proxy
+```
+and access the [Dashboard UI](http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/service?namespace=default``)
 
 ## Customisation 
 ### Change number of nodes
@@ -112,3 +142,7 @@ vagrant destroy
 
 ## Acknowledgments
 * This project is a fork of [talbotfoundry/k8s-kvm](https://github.com/talbotfoundry/k8s-kvm)
+* Ingress/LoadBalancer configuration for bare metal setups is beautifully explained by 
+[Randal Kamradt Sr](https://medium.com/better-programming/how-to-expose-your-services-with-kubernetes-ingress-7f34eb6c9b5a)
+from *Better Programming* 
+git@gitlab.com:monachus/channel.git
